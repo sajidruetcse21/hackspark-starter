@@ -1,0 +1,25 @@
+{
+  "name": "agentic-service",
+  "version": "1.0.0",
+  "description": "Agentic Service for RentPi",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "build": "echo 'No build needed'"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "mongoose": "^7.2.0",
+    "axios": "^1.4.0"
+  },
+  "type": "module",
+  "devDependencies": {
+    "nodemon": "^2.0.20"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
