@@ -1,10 +1,13 @@
 Immediate Roadmap: The Final Hour Sprint
+
 With our core algorithms and AI RAG pipeline fully tested, our final hour focuses on:
-1. Frontend UI Integration (React / Next.js)
+
+1. Frontend UI Integration (React)
 Connect our API-First backend to a responsive, Tailwind-styled client.
 Build a conversational chat UI backed by our MongoDB session state.
 Implement React Context for global JWT Auth state management.
+
 2. Graceful Rate Limit Handling (Bonus B2)
 Deploy a global Axios Interceptor to gracefully intercept 429 API throttling errors.
-Pause thread execution using exponential backoff ($wait \times 2^{attempt}$) with $\pm 20\%$ jitter.
+Pause thread execution using exponential backoff (wait times 2^attempt) with pm 20% jitter.
 Return a strict 503 Service Unavailable JSON response upon three failed retries.
