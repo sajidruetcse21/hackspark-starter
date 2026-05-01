@@ -1,25 +1,22 @@
-FROM node:20-alpine
-
+# STAGE 1: Build
+FROM node:20-alpine AS builder
 WORKDIR /app
 
-# Install curl for healthchecks
-RUN apk add --no-cache curl
-
-# Copy package files
 COPY package*.json ./
+RUN npm ci
 
-# Install dependencies
-RUN npm install --only=production
+# STAGE 2: Runtime
+FROM node:20-alpine AS runtime
+WORKDIR /app
 
-# Copy app source
-COPY src ./src
+ENV NODE_ENV=production
 
-# Expose port
+COPY package*.json ./
+RUN npm ci --omit=dev
+
+COPY . .
+
+RUN apk add --no-cache wget
+
 EXPOSE 8003
-
-# Health check
-HEALTHCHECK --interval=15s --timeout=5s --retries=3 \
-  CMD curl -f http://localhost:8003/status || exit 1
-
-# Start app
-CMD ["npm", "start"]
+CMD ["node", "index.js"]

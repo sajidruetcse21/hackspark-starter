@@ -85,11 +85,14 @@ services:
       JWT_SECRET:        ${JWT_SECRET}
       CENTRAL_API_URL:   ${CENTRAL_API_URL}
       CENTRAL_API_TOKEN: ${CENTRAL_API_TOKEN}
+      CENTRAL_API_RATE_LIMIT_STATE_PATH: /tmp/rentpi-central-api-rate-limit/state.json
     depends_on:
       postgres:
         condition: service_healthy
+    volumes:
+      - central_api_rate_limit:/tmp/rentpi-central-api-rate-limit
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:8001/status || exit 1"]
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8001/status || exit 1"]
       interval: 15s
       timeout: 5s
       retries: 3
@@ -107,10 +110,13 @@ services:
       PORT:              8002
       CENTRAL_API_URL:   ${CENTRAL_API_URL}
       CENTRAL_API_TOKEN: ${CENTRAL_API_TOKEN}
+      CENTRAL_API_RATE_LIMIT_STATE_PATH: /tmp/rentpi-central-api-rate-limit/state.json
       USER_SERVICE_URL:  http://user-service:8001
     depends_on:
       user-service:
         condition: service_healthy
+    volumes:
+      - central_api_rate_limit:/tmp/rentpi-central-api-rate-limit
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:8002/status || exit 1"]
       interval: 15s
@@ -130,6 +136,9 @@ services:
       PORT:              8003
       CENTRAL_API_URL:   ${CENTRAL_API_URL}
       CENTRAL_API_TOKEN: ${CENTRAL_API_TOKEN}
+      CENTRAL_API_RATE_LIMIT_STATE_PATH: /tmp/rentpi-central-api-rate-limit/state.json
+    volumes:
+      - central_api_rate_limit:/tmp/rentpi-central-api-rate-limit
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:8003/status || exit 1"]
       interval: 15s
@@ -176,8 +185,8 @@ services:
     ports:
       - "${FRONTEND_PORT:-3000}:3000"
     environment:
-      VITE_GATEWAY_URL:        http://localhost:8000
-      NEXT_PUBLIC_GATEWAY_URL: http://localhost:8000
+      VITE_GATEWAY_URL:        http://api-gateway:8000
+      NEXT_PUBLIC_GATEWAY_URL: http://api-gateway:8000
       GATEWAY_URL_INTERNAL:    http://api-gateway:8000 
     depends_on:
       api-gateway:
@@ -194,6 +203,7 @@ services:
 volumes:
   postgres_data:
   mongo_data:
+  central_api_rate_limit:
 
 # ── Network ───────────────────────────────────────────────────────────────────
 networks:

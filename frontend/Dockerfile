@@ -1,43 +1,34 @@
+# STAGE 1: The Builder
 FROM node:20-alpine AS builder
-
 WORKDIR /app
 
-# Copy package files
+# Copy package files and install
 COPY package*.json ./
-
-# Install all dependencies (needed for build)
 RUN npm install
 
-# Copy app source
-COPY pages ./pages
-
-# Build Next.js app
+# Copy source and build
+COPY . .
 RUN npm run build
 
-# ── Runtime Stage ──────────────────────────────────────────────────────────
-FROM node:20-alpine
+# STAGE 2: The Lean Runtime (Nginx Alpine is ~20MB)
+FROM nginx:alpine AS runtime
 
-WORKDIR /app
+# Copy build artifacts from builder stage
+# N.B. If using Vite, the folder is usually 'dist'. If CRA, it is 'build'.
+COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Install curl for healthchecks
-RUN apk add --no-cache curl
+# Create custom Nginx config to support Port 3000 and internal routing
+RUN echo 'server { \
+    listen 3000; \
+    location / { \
+        root /usr/share/nginx/html; \
+        index index.html; \
+        try_files $uri $uri/ /index.html; \
+    } \
+}' > /etc/nginx/conf.d/default.conf
 
-# Copy package files
-COPY package*.json ./
+# Essential: Install wget so the Healthcheck in your compose file works (P1)
+RUN apk add --no-cache wget
 
-# Install production dependencies only
-RUN npm install --only=production
-
-# Copy built app from builder
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/pages ./pages
-
-# Expose port
 EXPOSE 3000
-
-# Health check
-HEALTHCHECK --interval=15s --timeout=5s --retries=3 \
-  CMD curl -f http://localhost:3000 || exit 1
-
-# Start app
-CMD ["npm", "start"]
+CMD ["nginx", "-g", "daemon off;"]

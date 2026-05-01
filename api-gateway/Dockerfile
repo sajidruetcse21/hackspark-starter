@@ -1,25 +1,31 @@
-FROM node:20-alpine
-
+# STAGE 1: Build
+FROM node:20-alpine AS builder
 WORKDIR /app
 
-# Install curl for healthchecks
-RUN apk add --no-cache curl
-
-# Copy package files
+# Copy lockfiles for a clean install
 COPY package*.json ./
+RUN npm ci
 
-# Install dependencies
-RUN npm install --only=production
+# Copy source code
+COPY . .
 
-# Copy app source
-COPY src ./src
+# STAGE 2: Runtime
+FROM node:20-alpine AS runtime
+WORKDIR /app
 
-# Expose port
+# Set environment to production to reduce footprint
+ENV NODE_ENV=production
+
+# Install only production dependencies
+COPY package*.json ./
+RUN npm ci --omit=dev
+
+# Copy source files
+COPY . .
+
+# Ensure wget is installed for the healthcheck defined in docker-compose
+RUN apk add --no-cache wget
+
+# Update the port for each specific service
 EXPOSE 8000
-
-# Health check
-HEALTHCHECK --interval=15s --timeout=5s --retries=3 \
-  CMD curl -f http://localhost:8000/status || exit 1
-
-# Start app
-CMD ["npm", "start"]
+CMD ["node", "index.js"]
