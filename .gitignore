@@ -1,0 +1,47 @@
+# RentPi/.gitignore
+# You can change this file according to your need and stack.
+
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+vendor/
+
+# Build outputs
+dist/
+build/
+*.egg-info/
+target/
+bin/
+obj/
+
+# Environment files — NEVER commit secrets
+.env
+.env.local
+.env.*.local
+*.env
+
+# Docker
+.dockerignore
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+logs/
+
+# DB data volumes (if anyone bind-mounts locally)
+postgres-data/
+mongo-data/
